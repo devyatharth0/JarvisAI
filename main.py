@@ -7,6 +7,8 @@ import sys
 import random
 import json
 import subprocess
+from flask import Flask, request, jsonify, render_template
+import threading
 
 
 class JarvisAI:
@@ -52,12 +54,15 @@ class JarvisAI:
 
     def say(self, text):
         """Text to speech function"""
-        try:
-            print("Jarvis:", text)
-            self.engine.say(text)
-            self.engine.runAndWait()
-        except Exception as e:
-            print(f"Text-to-speech error: {e}")
+        def speak():
+            try:
+                print("Jarvis:", text)
+                self.engine.say(text)
+                self.engine.runAndWait()
+            except Exception as e:
+                print(f"Text-to-speech error: {e}")
+
+        threading.Thread(target=speak).start()
 
     def get_response(self, query):
         """Generate appropriate response based on query"""
@@ -262,11 +267,95 @@ class JarvisAI:
             self.say(f"Sorry, I couldn't open {app_name}.")
             return False
 
+    def open_website(self, site):
+        """Open a website based on the site name"""
+        sites = {
+            "youtube": "https://www.youtube.com",
+            "chatgpt": "https://chat.openai.com",
+            "gmail": "https://mail.google.com",
+            "gemini": "https://gemini.google.com/app",
+            "adobe firefly": "https://firefly.adobe.com/",
+            "github": "https://github.com/dashboard",
+            "replit": "https://replit.com/~",
+            "vercel": "https://vercel.com/yatharths-projects-e2dfdb78",
+            "netlify": "https://app.netlify.com/teams/devyatharth0-3vtjwr4/sites",
+            "render": "https://dashboard.render.com/",
+            "firebase": "https://console.firebase.google.com/u/0/",
+            "instagram": "https://www.instagram.com/",
+            "whatsapp": "https://web.whatsapp.com/"
+        }
+        url = sites.get(site.lower())
+        if url:
+            webbrowser.open(url)
+            return f"Opening {site}"
+        else:
+            return f"Sorry, I couldn't find the website for {site}"
+
+    def open_application(self, app_name):
+        """Open an application based on the app name"""
+        apps = {
+            "chrome": "chrome.exe",
+            "notepad": "notepad.exe",
+            "calculator": "calc.exe",
+            "discord": "discord.exe",
+            "spotify": "spotify.exe",
+            "vscode": "code.exe",
+            "pycharm": "pycharm64.exe",
+            "git": "git-bash.exe",
+            "zoom": "zoom.exe",
+            "steam": "steam.exe",
+            "obs": "obs64.exe",
+            "winrar": "winrar.exe"
+        }
+        command = apps.get(app_name.lower())
+        if command:
+            try:
+                process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = process.communicate()
+                if process.returncode == 0:
+                    return f"Opening {app_name}"
+                else:
+                    return f"Failed to open {app_name}"
+            except Exception as e:
+                return f"Error opening {app_name}: {e}"
+        else:
+            return f"Sorry, I couldn't find the application {app_name}"
+
+
+app = Flask(__name__, static_folder='static', template_folder='templates')
+jarvis = JarvisAI()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/query', methods=['POST'])
+def query():
+    data = request.json
+    print(f"Received /query request with data: {data}") # Debug log
+    query = data.get('query', '')
+    response = jarvis.get_response(query)
+    print(f"Responding with: {response}") # Debug log
+    return jsonify({"response": response})
+
+@app.route('/open', methods=['POST'])
+def open():
+    data = request.json
+    print(f"Received /open request with data: {data}") # Debug log
+    item = data.get('item', '')
+    if item:
+        if "open" in item.lower():
+            item = item.lower().replace("open ", "")
+            if any(word in item for word in ["youtube", "chatgpt", "gmail", "gemini", "adobe firefly", "github", "replit", "vercel", "netlify", "render", "firebase", "instagram", "whatsapp"]):
+                response = jarvis.open_website(item)
+            else:
+                response = jarvis.open_application(item)
+            print(f"Responding with: {response}") # Debug log
+            return jsonify({"response": response})
+        else:
+            return jsonify({"response": "Please specify what to open"})
+    else:
+        return jsonify({"response": "No item provided"})
 
 if __name__ == "__main__":
-    jarvis = JarvisAI()
-    try:
-        jarvis.run()
-    except KeyboardInterrupt:
-        jarvis.say("Goodbye! Have a nice day!")
-        sys.exit()
+    app.run(host='0.0.0.0', port=5000)

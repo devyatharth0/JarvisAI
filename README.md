@@ -9,6 +9,7 @@ JarvisAI is an AI assistant implemented in Python that can perform various tasks
 - Provides current time and date information
 - Performs basic calculations
 - Opens websites and applications on command
+- **New:** Accessible via a web interface
 
 ## Installation
 
@@ -22,18 +23,18 @@ To install JarvisAI, follow these steps:
 
 2. Install the required dependencies:
    ```
-   pip install speech_recognition pyttsx3
+   pip install -r requirements.txt
    ```
 
 ## Usage
 
-To run JarvisAI, execute the following command in your terminal:
+To run JarvisAI as a web server, execute the following command in your terminal:
 
 ```
 python main.py
 ```
 
-Once running, you can interact with JarvisAI using voice commands or text input.
+Once running, open your web browser and navigate to `http://localhost:5000` to interact with JarvisAI using the web interface.
 
 ## Dependencies
 
@@ -41,6 +42,7 @@ JarvisAI requires the following Python libraries:
 
 - speech_recognition
 - pyttsx3
+- flask
 - datetime
 - webbrowser
 - random

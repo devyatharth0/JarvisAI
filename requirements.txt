@@ -1,0 +1,10 @@
+speechrecognition
+pyttsx3
+flask
+webbrowser
+datetime
+random
+json
+subprocess
+os
+sys
