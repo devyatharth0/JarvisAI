@@ -9,7 +9,7 @@ JarvisAI is an AI assistant implemented in Python that can perform various tasks
 - Provides current time and date information
 - Performs basic calculations
 - Opens websites and applications on command
-- **New:** Accessible via a web interface
+- Accessible via a web interface
 
 ## Installation
 
@@ -48,6 +48,7 @@ JarvisAI requires the following Python libraries:
 - random
 - json
 - subprocess
+- threading
 
 ## Examples
 
